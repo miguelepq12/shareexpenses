@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout/main_layout :: head"></head>
+<body>
+	<header th:replace="layout/main_layout :: header"></header>
+	
+	<div class="container py-4">
+	<h3 class="font-weight-bold text-secondary">Metodos de pago</h3>
+	<div class="row d-flex justify-content-end mr-3 mt-2">
+	<a th:href="@{/pms/create}" class="btn btn-primary">Agregar metodo de pago</a>
+	</div>
+		<div th:each="pm: ${pms}"  class="list-item row my-4">
+			<div class="col-11 col-sm-12 d-flex border align-items-center p-2 pl-3">
+				<h5 class="flex-fill m-0" th:text="${pm.name}"></h5>
+				<a title="Modificar" th:href="@{'/pms/create/'+${pm.id}}" class="mx-3"><img alt="Modificar" th:src="@{/img/edit.svg}" height="30px" width="30px"></a>
+				<a title="Eliminar" onclick="return confirm('¿Está seguro que desea eliminar?');" th:href="@{'/pms/delete/'+${pm.id}}" class="mx-3"><img alt="Eliminar" th:src="@{/img/delete.svg}" height="30px" width="30px"></a>
+			</div>
+		</div>
+		<nav th:replace="layout/paginator-nav :: paginator"></nav>
+	</div>
+	<footer th:replace="layout/main_layout :: footer(~{::script})">
+		<script src=""></script>
+	</footer>
+</body>
+</html>

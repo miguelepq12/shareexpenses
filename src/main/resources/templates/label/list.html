@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout/main_layout :: head"></head>
+<body>
+	<header th:replace="layout/main_layout :: header"></header>
+	
+	<div class="container py-4">
+	<h3 class="font-weight-bold text-secondary">Etiquetas</h3>
+	<div class="row d-flex justify-content-end mr-3 mt-2">
+		<a th:href="@{/labels/create}" class="btn btn-primary">Agregar etiqueta</a>
+	</div>
+		<div th:each="label: ${labels}"  class="list-item row my-4">
+			<div class="col-1 p-4" th:style="'background-color: '+${label.color}+'; opacity:0.9;'" ></div>
+			<div class="col-10 col-sm-11 d-flex border align-items-center">
+				<h5 class="flex-fill m-0" th:text="${label.name}"></h5>
+				<a title="Modificar" th:href="@{'/labels/create/'+${label.id}}" class="mx-3"><img alt="Modificar" th:src="@{/img/edit.svg}" height="30px" width="30px"></a>
+				<a title="Eliminar" onclick="return confirm('¿Está seguro que desea eliminar?');" th:href="@{'/labels/delete/'+${label.id}}" class="mx-3"><img alt="Eliminar" th:src="@{/img/delete.svg}" height="30px" width="30px"></a>
+			</div>
+		</div>
+		<nav th:replace="layout/paginator-nav :: paginator"></nav>
+	</div>
+	<footer th:replace="layout/main_layout :: footer(~{::script})">
+		<script src=""></script>
+	</footer>
+</body>
+</html>

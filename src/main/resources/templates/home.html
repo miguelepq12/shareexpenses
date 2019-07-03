@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="layout/main_layout :: head"></head>
+<body>
+
+	<header th:replace="layout/main_layout :: header"></header>
+
+	<div class="fluid-container py-4 mx-5">
+
+		<div class="row">
+			<div class="col-sm-10">
+				<div class="row">
+					<div class="input-group mb-3">
+						<input id="search" type="text" class="form-control"
+							placeholder="Buscar eventos" aria-label="Buscar eventos"
+							aria-describedby="button-addon2">
+						<div class="input-group-append">
+							<button class="btn btn-outline-primary" type="button"
+								id="button-addon2" onclick="search()">Buscar</button>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<form style="width: 100%;">
+						<div class="form-group row">
+							<label for="filter" class="col-sm-1 col-form-label">Filtrar</label>
+							<div class="col-sm-11">
+								<select class="form-control" id="filter">
+									<option value="0">Todos los eventos</option>
+									<option th:each="label: ${labels}" th:value="${label.id}" th:text="${label.name}"></option>
+								</select>
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>
+
+			<div
+				style="display: flex; justify-content: center; align-items: center;"
+				class="col-sm-2">
+				<a th:href="@{'/events/create'}" class="btn btn-success">Crear evento</a>
+			</div>
+
+		</div>
+
+		<div class="container my-3">
+			<div id="item-event-default" class="d-none">
+				<div onclick="location.href = '/events/'+{ID}"
+					style="cursor: pointer;" class="event-item row border p-3 my-3">
+					<div
+						class="col-lg-2 d-flex justify-content-center align-items-center">
+						<img src="{IMG}" height="100px" width="100px" alt="">
+					</div>
+					<div class="col-sm mt-2">
+						<h4>{NAME}</h4>
+						<h5 style="background-color: {COLOR}" class=" text-light w-50 p-1 text-center text-wrap">{LABEL}</h5>
+					</div>
+					<div class="col-sm text-right">
+						<p class="text-secondary font-weight-light">{DATE}</p>
+						<h3 class="font-weight-bold"><span>$</span>{AMOUNT}</h3>
+					</div>
+				</div>
+			</div>
+			<div id="list-events">
+			
+			</div>
+			<div  id="loading" class="load d-flex justify-content-center">
+			<div id="load" class="spinner-grow text-center" role="status" style="display: none;">
+				<span class="sr-only">Loading...</span>
+			</div>
+			<h6 id="nomore" class="text-secondary text-center"  style="display: none;">No hay más eventos</h6>
+			</div>
+			
+		</div>
+
+	</div>
+
+	<footer th:replace="layout/main_layout :: footer(~{::script})">
+		<script th:src="@{/js/moment-with-locales.js}"></script>
+		<script th:src="@{/js/list-event.js}"></script>
+	</footer>
+</body>
+</html>

@@ -44,61 +44,23 @@ function configureInfiniteScroll() {
 	var win = $(window);
 	win.on({
 	    'touchmove': function(e) { 
-	    	alert("Scroll touch");
-	    	initPopulate();
+	    	if ($(document).height() - win.height() == window.pageYOffset) {
+	    		initPopulate();
+	    	}
 	    }});
 	
 	win.scroll(function() {
-		alert("Scroll normal");
-		initPopulate();
-	});
-}
-
-function configureInfiniteScrollMobile() {
-	$(document).on("scrollstop", function(e) {
-
-		/* active page */
-		var activePage = $.mobile.pageContainer.pagecontainer("getActivePage"),
-
-		/* window's scrollTop() */
-		scrolled = $(window).scrollTop(),
-
-		/* viewport */
-		screenHeight = $.mobile.getScreenHeight(),
-
-		/* content div height within active page */
-		contentHeight = $(".ui-content", activePage).outerHeight(),
-
-		/* header's height within active page (remove -1 for unfixed) */
-		header = $(".ui-header", activePage).outerHeight() - 1,
-
-		/* footer's height within active page (remove -1 for unfixed) */
-		footer = $(".ui-footer", activePage).outerHeight() - 1,
-
-		/* total height to scroll */
-		scrollEnd = contentHeight - screenHeight + header + footer;
-
-		/*
-		 * if total scrolled value is equal or greater than total height of
-		 * content div (total scroll) and active page is the target page (pageX
-		 * not any other page) call addMore() function
-		 */
-		if (activePage[0].id == "pageX" && scrolled >= scrollEnd) {
-			alert("Scroll special");
+		if ($(document).height() - win.height() == win.scrollTop()) {
 			initPopulate();
 		}
 	});
 }
 
 function initPopulate() {
-	var win = $(window);
-	alert(""+$(document).height() +" - "+win.height() +" - "+win.scrollTop());
-	if ($(document).height() - win.height() == win.scrollTop()) {
-		if (page >= 0) {
-			$('#load').show();
-			page++;
-			populateEvents();
-		}
+	if (page >= 0) {
+		$('#load').show();
+		page++;
+		populateEvents();
 	}
 }
 

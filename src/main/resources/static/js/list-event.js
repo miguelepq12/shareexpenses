@@ -51,7 +51,6 @@ function configureInfiniteScroll() {
 	    }});
 	
 	win.scroll(function() {
-		alert("Scroll normal");
 		if ($(document).height() - win.height() == win.scrollTop()) {
 			initPopulate();
 		}

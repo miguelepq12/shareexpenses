@@ -44,10 +44,7 @@ function configureInfiniteScroll() {
 	var win = $(window);
 	win.on({
 	    'touchmove': function(e) { 
-	    	alert("Scroll touch");
-	    	 window.pageYOffset+=5;
-	    	alert( window.pageYOffset+"");
-	    	
+	    	$("#btn").html("Of:"+window.pageYOffset+" - ST:"+win.scrollTop()+" - ey:"+e.pageY+"<br/>"+($(document).height() - win.height()));
 	    	if ($(document).height() - win.height() == window.pageYOffset) {
 	    		initPopulate();
 	    	}

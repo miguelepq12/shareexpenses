@@ -22,19 +22,19 @@
 			</button>
 			<div class="collapse navbar-collapse" id="navbarNavDropdown">
 				<div class="navbar-nav mr-auto">
-					<a class="nav-item nav-link active" th:href="@{/}">Inicio <span
+					<a class="nav-item nav-link" th:href="@{/}">Inicio <span
 						class="sr-only">(current)</span>
 					</a> <a class="nav-item nav-link" th:href="@{/pms}">Formas de pago</a> <a
 						class="nav-item nav-link" th:href="@{/labels}">Etiqueta</a>
 				</div>
-				<div class="navbar-nav navbar-right mx-lg-5">
+				<div class="navbar-nav navbar-right mx-lg-5 d-flex flex-row">
 					<img style="border-radius:50%" class="align-self-center" alt="" th:src="@{'/user/uploads/'+${user.profileImg}}" 
 					width="30px" height="30px">
 					<div class="nav-item dropdown mr-lg-5">
-						<a class="nav-link dropdown-toggle" href="#"
+						<a class="nav-link dropdown-toggle ml-sm-0 ml-3" href="#"
 							id="navbarDropdownMenuLink" role="button" data-toggle="dropdown">
 							<span th:text="${user.username}"></span></a>
-						<div class="dropdown-menu"
+						<div class="dropdown-menu  ml-sm-0 ml-3"
 							aria-labelledby="navbarDropdownMenuLink">
 							
 							<a class="dropdown-item" th:href="@{/user/profile}">Configurar

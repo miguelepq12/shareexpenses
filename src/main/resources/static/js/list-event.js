@@ -40,17 +40,25 @@ function populateEvents() {
 function configureInfiniteScroll() {
 	var win = $(window);
 
-	// Each time the user scrolls
+	win.on({
+	    'touchmove': function(e) { 
+	    	initPopulate();
+	    }});
+	
 	win.scroll(function() {
-		// End of the document reached?
-		if ($(document).height() - win.height() == win.scrollTop()) {
-			if (page >= 0) {
-				$('#load').show();
-				page++;
-				populateEvents();
-			}
-		}
+		initPopulate();
 	});
+}
+
+function initPopulate(){
+	var win = $(window);
+	if ($(document).height() - win.height() == win.scrollTop()) {
+		if (page >= 0) {
+			$('#load').show();
+			page++;
+			populateEvents();
+		}
+	}
 }
 
 function search() {

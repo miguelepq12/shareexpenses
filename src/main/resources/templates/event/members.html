@@ -38,9 +38,9 @@
 						th:action="@{'/events/members/change'}" th:object="${event}">
 				<div th:each="me,iter: *{members}"  class="list-item row my-2 border p-3">
 					<h5 style="margin: 0px" class="col-sm-3 align-self-center" th:text="${me.name}"></h5>
-					<div class="col-sm-9 d-flex">
-						<input class="form-control mx-2 mx-sm-3" type="number" min="0" step=".01" th:field="*{members[__${iter.index}__].amount}"/>
-						<select class="form-control mx-2 mx-sm-3" th:field="*{members[__${iter.index}__].paymentMethod}">
+					<div class="col-sm-9 d-sm-flex">
+						<input class="form-control my-3 my-sm-0 mx-sm-3" type="number" min="0" step=".01" th:field="*{members[__${iter.index}__].amount}"/>
+						<select class="form-control my-3 my-sm-0 mx-sm-3" th:field="*{members[__${iter.index}__].paymentMethod}">
 							<option th:each="pm: ${pms}" th:value="${pm.id}" th:text="${pm.name}"></option>
 						</select>
 						<a class="btn btn-danger" th:href="@{'/events/members/delete/'+${me.id}}">Eliminar</a>

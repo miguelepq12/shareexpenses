@@ -44,26 +44,20 @@ function configureInfiniteScroll() {
 	var win = $(window);
 	win.on({
 	    'touchmove': function(e) { 
-	    	$("#btn").html("Of:"+window.pageYOffset+" - ST:"+win.scrollTop()+" - ey:"+e.pageY+"<br/>"+(getDocHeight() - window.innerHeight));
+	    	//$("#btn").html("Of:"+window.pageYOffset+" - ST:"+win.scrollTop()+" - ey:"+e.pageY+"<br/>"+($(document).height() - window.innerHeight));
 	    	if ($(document).height() - window.innerHeight == window.pageYOffset) {
 	    		initPopulate();
 	    	}
 	    }});
 	
 	win.scroll(function() {
-		if (getDocHeight() - window.innerHeight <= window.pageYOffset) {
+		$("#btn").html("Sum:"+(window.innerHeight + window.pageYOffset)+" - ST:"+(document.body.offsetHeight - 2));
+		if ((window.innerHeight + window.pageYOffset) >= document.body.offsetHeight - 2) {
 			initPopulate();
 		}
 	});
 }
-function getDocHeight() {
-    var D = document;
-    return Math.max(
-        D.body.scrollHeight, D.documentElement.scrollHeight,
-        D.body.offsetHeight, D.documentElement.offsetHeight,
-        D.body.clientHeight, D.documentElement.clientHeight
-    );
-}
+
 function initPopulate() {
 	if (page >= 0) {
 		$('#load').show();

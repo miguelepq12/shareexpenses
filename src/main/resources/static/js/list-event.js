@@ -42,7 +42,14 @@ function populateEvents() {
 
 function configureInfiniteScroll() {
 	var win = $(window);
+	win.on({
+	    'touchmove': function(e) { 
+	    	alert("Scroll touch");
+	    	initPopulate();
+	    }});
+	
 	win.scroll(function() {
+		alert("Scroll normal");
 		initPopulate();
 	});
 }
@@ -77,6 +84,7 @@ function configureInfiniteScrollMobile() {
 		 * not any other page) call addMore() function
 		 */
 		if (activePage[0].id == "pageX" && scrolled >= scrollEnd) {
+			alert("Scroll special");
 			initPopulate();
 		}
 	});
@@ -84,6 +92,7 @@ function configureInfiniteScrollMobile() {
 
 function initPopulate() {
 	var win = $(window);
+	alert(""+$(document).height() +" - "+win.height() +" - "+win.scrollTop());
 	if ($(document).height() - win.height() == win.scrollTop()) {
 		if (page >= 0) {
 			$('#load').show();

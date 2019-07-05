@@ -80,7 +80,6 @@ function configureInfiniteScrollMobile() {
 			initPopulate();
 		}
 	});
-	;
 }
 
 function initPopulate() {

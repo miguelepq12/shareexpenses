@@ -1,7 +1,7 @@
 window.onload = function() {
 	populateEvents();
 	configureInfiniteScroll();
-	configureInfiniteScrollMobile()
+	configureInfiniteScrollMobile();
 	setFilter();
 };
 

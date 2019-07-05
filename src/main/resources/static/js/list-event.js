@@ -1,6 +1,7 @@
 window.onload = function() {
 	populateEvents();
 	configureInfiniteScroll();
+	configureInfiniteScrollMobile()
 	setFilter();
 };
 
@@ -22,10 +23,12 @@ function populateEvents() {
 						item = item.replace(/{NAME}/g, val.name);
 						item = item.replace(/{IMG}/g, "/events/uploads/"
 								+ val.img);
-						item = item.replace(/{AMOUNT}/g, currencyFormat(val.amount));
-						item = item.replace(/{DATE}/g, moment(val.createAt).locale('es').format('LL'));
+						item = item.replace(/{AMOUNT}/g,
+								currencyFormat(val.amount));
+						item = item.replace(/{DATE}/g, moment(val.createAt)
+								.locale('es').format('LL'));
 						item = item.replace(/{LABEL}/g, val.label.name);
-						item=item.replace(/{COLOR}/g,val.label.color);
+						item = item.replace(/{COLOR}/g, val.label.color);
 
 						$("#list-events").append(item);
 
@@ -39,18 +42,48 @@ function populateEvents() {
 
 function configureInfiniteScroll() {
 	var win = $(window);
-
-	win.on({
-	    'touchmove': function(e) { 
-	    	initPopulate();
-	    }});
-	
 	win.scroll(function() {
 		initPopulate();
 	});
 }
 
-function initPopulate(){
+function configureInfiniteScrollMobile() {
+	$(document).on("scrollstop", function(e) {
+
+		/* active page */
+		var activePage = $.mobile.pageContainer.pagecontainer("getActivePage"),
+
+		/* window's scrollTop() */
+		scrolled = $(window).scrollTop(),
+
+		/* viewport */
+		screenHeight = $.mobile.getScreenHeight(),
+
+		/* content div height within active page */
+		contentHeight = $(".ui-content", activePage).outerHeight(),
+
+		/* header's height within active page (remove -1 for unfixed) */
+		header = $(".ui-header", activePage).outerHeight() - 1,
+
+		/* footer's height within active page (remove -1 for unfixed) */
+		footer = $(".ui-footer", activePage).outerHeight() - 1,
+
+		/* total height to scroll */
+		scrollEnd = contentHeight - screenHeight + header + footer;
+
+		/*
+		 * if total scrolled value is equal or greater than total height of
+		 * content div (total scroll) and active page is the target page (pageX
+		 * not any other page) call addMore() function
+		 */
+		if (activePage[0].id == "pageX" && scrolled >= scrollEnd) {
+			initPopulate();
+		}
+	});
+	;
+}
+
+function initPopulate() {
 	var win = $(window);
 	if ($(document).height() - win.height() == win.scrollTop()) {
 		if (page >= 0) {
@@ -81,8 +114,6 @@ function resetList() {
 	populateEvents();
 }
 
-function currencyFormat(num){
-	return num.toFixed(2).replace(/(\d)(?=(\d{3})+(?!\d))/g,'$1,');
+function currencyFormat(num) {
+	return num.toFixed(2).replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
 }
-
-

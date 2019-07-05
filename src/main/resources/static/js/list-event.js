@@ -51,7 +51,7 @@ function configureInfiniteScroll() {
 	    }});
 	
 	win.scroll(function() {
-		if ($(document).height() - win.height() == win.scrollTop()) {
+		if ($(document).height() - window.innerHeight >= window.pageYOffset) {
 			initPopulate();
 		}
 	});

@@ -42,29 +42,17 @@ function populateEvents() {
 
 function configureInfiniteScroll() {
 	var win = $(window);
-	win.on({
-	    'touchmove': function(e) { 
-	    	//$("#btn").html("Of:"+window.pageYOffset+" - ST:"+win.scrollTop()+" - ey:"+e.pageY+"<br/>"+($(document).height() - window.innerHeight));
-	    	if ($(document).height() - window.innerHeight == window.pageYOffset) {
-	    		initPopulate();
-	    	}
-	    }});
-	
 	win.scroll(function() {
-		$("#btn").html("Sum:"+(window.innerHeight + window.pageYOffset)+" - ST:"+(document.body.offsetHeight - 2));
 		if ((window.innerHeight + window.pageYOffset) >= document.body.offsetHeight - 2) {
-			initPopulate();
+			if (page >= 0) {
+				$('#load').show();
+				page++;
+				populateEvents();
+			}
 		}
 	});
 }
 
-function initPopulate() {
-	if (page >= 0) {
-		$('#load').show();
-		page++;
-		populateEvents();
-	}
-}
 
 function search() {
 	var input = document.getElementById("search");

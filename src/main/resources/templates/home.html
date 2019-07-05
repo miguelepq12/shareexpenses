@@ -38,7 +38,7 @@
 			<div
 				style="display: flex; justify-content: center; align-items: center;"
 				class="col-sm-2">
-				<a id="btn" th:href="@{'/events/create'}" class="btn btn-success" style="position: fixed;">Crear evento</a>
+				<a th:href="@{'/events/create'}" class="btn btn-success">Crear evento</a>
 			</div>
 
 		</div>
@@ -77,7 +77,7 @@
 
 	<footer th:replace="layout/main_layout :: footer(~{::script})">
 		<script th:src="@{/js/moment-with-locales.js}"></script>
-		<script th:src="@{/js/list-event.js?v=2}"></script>
+		<script th:src="@{/js/list-event.js?v=1}"></script>
 	</footer>
 </body>
 </html>

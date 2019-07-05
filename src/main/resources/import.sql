@@ -25,21 +25,6 @@ INSERT INTO events (id,create_at,amount,img,name,label_id,payment_method_id,user
 INSERT INTO events (id,create_at,amount,img,name,label_id,payment_method_id,user_id) VALUES(6,NOW(),30000,'img_default.png','Pizzada viernes',1,2,1);
 INSERT INTO events (id,create_at,amount,img,name,label_id,payment_method_id,user_id) VALUES(7,NOW(),50000,'img_default.png','Comida para la casa',1,2,1);
 INSERT INTO events (id,create_at,amount,img,name,label_id,payment_method_id,user_id) VALUES(8,NOW(),1000,'img_default.png','Jugar bolos',2,2,1);
-INSERT INTO events (id,create_at,amount,img,name,label_id,payment_method_id,user_id) VALUES(9,NOW(),1000,'img_default.png','Jugar bolos',2,2,1);
-INSERT INTO events (id,create_at,amount,img,name,label_id,payment_method_id,user_id) VALUES(10,NOW(),1000,'img_default.png','Jugar bolos',2,2,1);
-INSERT INTO events (id,create_at,amount,img,name,label_id,payment_method_id,user_id) VALUES(11,NOW(),1000,'img_default.png','Jugar bolos',2,2,1);
-INSERT INTO events (id,create_at,amount,img,name,label_id,payment_method_id,user_id) VALUES(12,NOW(),1000,'img_default.png','Jugar bolos',2,2,1);
-INSERT INTO events (id,create_at,amount,img,name,label_id,payment_method_id,user_id) VALUES(13,NOW(),1000,'img_default.png','Jugar bolos',2,2,1);
-INSERT INTO events (id,create_at,amount,img,name,label_id,payment_method_id,user_id) VALUES(14,NOW(),1000,'img_default.png','Jugar bolos',2,2,1);
-INSERT INTO events (id,create_at,amount,img,name,label_id,payment_method_id,user_id) VALUES(15,NOW(),1000,'img_default.png','Jugar bolos',2,2,1);
-INSERT INTO events (id,create_at,amount,img,name,label_id,payment_method_id,user_id) VALUES(16,NOW(),1000,'img_default.png','Jugar bolos',2,2,1);
-INSERT INTO events (id,create_at,amount,img,name,label_id,payment_method_id,user_id) VALUES(17,NOW(),1000,'img_default.png','Jugar bolos',2,2,1);
-INSERT INTO events (id,create_at,amount,img,name,label_id,payment_method_id,user_id) VALUES(18,NOW(),1000,'img_default.png','Jugar bolos',2,2,1);
-INSERT INTO events (id,create_at,amount,img,name,label_id,payment_method_id,user_id) VALUES(19,NOW(),1000,'img_default.png','Jugar bolos',2,2,1);
-INSERT INTO events (id,create_at,amount,img,name,label_id,payment_method_id,user_id) VALUES(20,NOW(),1000,'img_default.png','Jugar bolos',2,2,1);
-INSERT INTO events (id,create_at,amount,img,name,label_id,payment_method_id,user_id) VALUES(21,NOW(),1000,'img_default.png','Jugar bolos',2,2,1);
-INSERT INTO events (id,create_at,amount,img,name,label_id,payment_method_id,user_id) VALUES(22,NOW(),1000,'img_default.png','Jugar bolos',2,2,1);
-INSERT INTO events (id,create_at,amount,img,name,label_id,payment_method_id,user_id) VALUES(23,NOW(),1000,'img_default.png','Jugar bolos',2,2,1);
 
 /*Populate table Member*/
 INSERT INTO members (id,create_at,amount,name,event_id,payment_method_id) VALUES(1,NOW(),5000,'Miguel Piña',1,1);

@@ -179,6 +179,10 @@ public class Event implements Serializable {
 		return total;
 	}
 
+	public double individualInput() {
+		return amount.doubleValue()/members.size();
+	}
+
 	private static final long serialVersionUID = 1L;
 
 }

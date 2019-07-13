@@ -2,6 +2,7 @@ package com.miguelpina.app.controller;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -207,6 +208,8 @@ public class EventController {
 		model.put("user",userService.findByUsername(auth.getName()));
 		model.put("pms", pmService.findPaymentMethodByMemberOfEvent(event));
 		model.put("event", event);
+		model.put("debtors", getDebtors(event));
+		model.put("creditors", getCreditors(event));
 		model.put("titulo","Evento: "+ event.getName());
 
 		return "event/item";
@@ -273,4 +276,27 @@ public class EventController {
 		return "redirect:/";
 	}
 	
+	public List<Member> getCreditors(Event event){
+		List<Member> creditors=new ArrayList<>();
+		
+		for (Member member : event.getMembers()) {
+			if ((member.getAmount()-event.individualInput())>0) {
+				creditors.add(new Member(member.getName(),member.getAmount()-event.individualInput()));
+			}
+		}
+		
+		return creditors;
+	}
+	
+	public List<Member> getDebtors(Event event){
+		List<Member> debtors=new ArrayList<>();
+		
+		for (Member member : event.getMembers()) {
+			if ((member.getAmount()-event.individualInput())<0) {
+				debtors.add(new Member(member.getName(),-(member.getAmount()-event.individualInput())));
+			}
+		}
+		
+		return debtors;
+	}
 }

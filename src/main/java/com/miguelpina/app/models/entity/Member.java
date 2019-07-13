@@ -33,6 +33,16 @@ public class Member implements Serializable{
 	}
 	public Member() {
 	}
+	
+	
+
+	public Member(@NotEmpty String name, double amount) {
+		super();
+		this.name = name;
+		this.amount = amount;
+	}
+
+
 
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)

@@ -36,8 +36,8 @@
 			<div class="row mx-sm-5 border">
 				<div class="col-sm-5 align-self-center">
 					<h3 class="my-3">Total pagado: <span class="font-weight-light">$</span><span class="font-weight-light" th:text="${#numbers.formatDecimal(event.calcTotalAmountOfMember(),0,'COMMA',2,'POINT')}"></span></h3>
-					<h3 class="mt-3 text-danger" th:if="${event.amount-event.calcTotalAmountOfMember()}>0">Saldo evento: <span class="font-weight-light">$</span> <span class="font-weight-light" th:text="${(event.amount-event.calcTotalAmountOfMember())*-1}"></span> </h3>
-					<h3 class="mt-3 text-success" th:if="${event.amount-event.calcTotalAmountOfMember()}<0">Saldo evento: <span class="font-weight-light">$</span> <span class="font-weight-light" th:text="${(event.amount-event.calcTotalAmountOfMember())*(-1)}"></span> </h3>
+					<h3 class="mt-3 text-danger" th:if="${event.amount-event.calcTotalAmountOfMember()}>0">Saldo evento: <span class="font-weight-light">$</span> <span class="font-weight-light" th:text="${#numbers.formatDecimal(((event.amount-event.calcTotalAmountOfMember())*-1),0,'COMMA',2,'POINT')}"></span> </h3>
+					<h3 class="mt-3 text-success" th:if="${event.amount-event.calcTotalAmountOfMember()}<0">Saldo evento: <span class="font-weight-light">$</span> <span class="font-weight-light" th:text="${#numbers.formatDecimal(((event.amount-event.calcTotalAmountOfMember())*-1),0,'COMMA',2,'POINT')}"></span> </h3>
 				</div>
 				<div class="col-sm bg-light p-3  text-right">
 					<h5  th:each="pm:${pms}"><span th:text="${pm.name}+': '"></span><span class="font-weight-light" th:text="${#numbers.formatDecimal(event.calcAmountForPaymentMethod(pm),0,'COMMA',2,'POINT')}"></span><span class="font-weight-light"> $</span></h5>

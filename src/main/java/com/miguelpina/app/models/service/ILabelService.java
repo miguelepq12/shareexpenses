@@ -16,7 +16,7 @@ public interface ILabelService {
 
 	public Label findById(Long id);
 	
-	public void save(Label label);
+	public Label save(Label label);
 	
 	public void delete(Long id);
 }

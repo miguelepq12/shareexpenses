@@ -2,33 +2,30 @@ package com.miguelpina.app.controller;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.SessionAttributes;
-import org.springframework.web.bind.support.SessionStatus;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.miguelpina.app.models.entity.User;
 import com.miguelpina.app.models.service.IUploadFileSevice;
 import com.miguelpina.app.models.service.IUserService;
 
-@Controller
-@RequestMapping("/user")
-@SessionAttributes("user")
+@RestController
+@RequestMapping("/api/user")
 public class UserController {
 
 	private static final String UPLOAD_IMG = "none";
@@ -58,43 +55,63 @@ public class UserController {
 	}
 	
 	@GetMapping("/profile")
-	public String viewProfile(Map<String, Object> model) {
+	public ResponseEntity<?> show() {
 		Authentication auth= SecurityContextHolder.getContext().getAuthentication();
+		Map<String, Object> response=new HashMap<>();
 		
-		model.put("user", userService.findByUsername(auth.getName()));
-		return "user/profile";
+		response.put("user", userService.findByUsername(auth.getName()));
+		
+		return new ResponseEntity<Map<String,Object>>(response,HttpStatus.OK);
 	}
 	
-	@PostMapping("/change-pass")
-	public String changePass(User user,RedirectAttributes flash, Model model,SessionStatus status) {
+	@PutMapping("/pass")
+	public ResponseEntity<?> changePass(@RequestBody User user) {
+		Authentication auth= SecurityContextHolder.getContext().getAuthentication();
+		Map<String, Object> response=new HashMap<>();
 		
-		userService.save(user);
-		status.setComplete();
-		flash.addFlashAttribute("success", "Contraseña cambiada");
-		return "redirect:/user/profile";
-	}
-	
-	@PostMapping("/change-img")
-	public String changeImg(User user,RedirectAttributes flash, Model model,@RequestParam("file") MultipartFile photo,
-			SessionStatus status) {
-
-		String uniqueFilename = null;
+		User oldUser=userService.findByUsername(auth.getName());
 		
-		if (!photo.isEmpty()) {
-
-			try {
-				uniqueFilename = uploadFileService.copy(photo, IUploadFileSevice.USER_IMAGE);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		} else {
-			uniqueFilename=UPLOAD_IMG + ".png";
+		try {
+			oldUser.setPass(user.getPass());
+			userService.save(user);
+			response.put("mensaje", "Contraseña actualizada con exito");
+		}catch (DataAccessException e) {
+			response.put("mensaje", "Error al actualizar contraseña en la base de datos");
+			response.put("error",e.getMostSpecificCause().getMessage());
+			
+			return new ResponseEntity<Map<String,Object>>(response,HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		
-		userService.updateImg(uniqueFilename, user);
-		status.setComplete();
-		flash.addFlashAttribute("success", "Imagen cambiada");
-		return "redirect:/user/profile";
+		
+		return new ResponseEntity<Map<String,Object>>(response,HttpStatus.OK);
+	}
+	
+	@PutMapping("/img")
+	public ResponseEntity<?> changeImg(User user) {
+		Map<String, Object> response=new HashMap<>();
+		
+		if (!user.getProfileImg().isEmpty()) {
+
+			String uniqueFilename = null;
+			String codeBase64 = user.getProfileImg().replace("name:.*;", "");
+			String fileName = user.getProfileImg().replace(codeBase64, "");
+
+			try {
+				uniqueFilename = uploadFileService.copy(codeBase64, fileName, IUploadFileSevice.USER_IMAGE);
+
+				user.setProfileImg(uniqueFilename);
+			} catch (IOException e) {
+				e.printStackTrace();
+				response.put("mensaje", "Error al cambiar imagen");
+				return new ResponseEntity<Map<String,Object>>(response,HttpStatus.INTERNAL_SERVER_ERROR); 
+			}
+		} else {
+			user.setProfileImg(UPLOAD_IMG + ".png");
+		}
+		
+	
+		response.put("success", "Imagen cambiada");
+		return new ResponseEntity<Map<String,Object>>(response,HttpStatus.OK); 
 	}
 
 	

@@ -38,8 +38,8 @@ public class EventServiceImp implements IEventService {
 
 	@Override
 	@Transactional
-	public void saveEvent(Event event) {
-		eventDao.save(event);
+	public Event saveEvent(Event event) {
+		return eventDao.save(event);
 	}
 
 	@Override

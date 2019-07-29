@@ -1,33 +1,29 @@
 package com.miguelpina.app.controller;
 
 import java.io.IOException;
-import java.security.Principal;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import org.springframework.dao.DataAccessException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.support.SessionStatus;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
-import com.miguelpina.app.models.entity.Label;
+import com.miguelpina.app.auth.service.JWTService;
 import com.miguelpina.app.models.entity.User;
-import com.miguelpina.app.models.service.ILabelService;
 import com.miguelpina.app.models.service.IUploadFileSevice;
 import com.miguelpina.app.models.service.IUserService;
-import com.miguelpina.app.models.service.SecurityServiceImp;
 
-@Controller
+@RestController
 public class LoginController {
 
 	private static final String UPLOAD_IMG = "none";
@@ -36,97 +32,84 @@ public class LoginController {
 	private IUserService userService;
 
 	@Autowired
-	private ILabelService labelService;
-
-	@Autowired
-	private SecurityServiceImp securityService;
-
-	@Autowired
 	private IUploadFileSevice uploadFileService;
+	
+	@Autowired
+	private JWTService jwtService;
+	
+	@Autowired
+	private AuthenticationManager authenticationManager;
 
-	@GetMapping("/registration")
-	public String registration(Map<String, Object> model) {
-		model.put("user", new User());
-		model.put("titulo", "Registrate");
-
-		return "registration";
-	}
-
-	@PostMapping("/registration")
-	public String registration(@Valid User user, BindingResult bindingResult, RedirectAttributes flash, Model model,
-			SessionStatus status, @RequestParam("file") MultipartFile photo) {
-
+	@PostMapping("/api/registration")
+	public ResponseEntity<?> registration(@Valid @RequestBody User user, BindingResult result) {
+		Map<String, Object> response=new HashMap<String, Object>();
+		
 		if (!userService.isEmailValid(user)) {
-			FieldError emailDuplicate = new FieldError("user", "email", user.getEmail(), false,
-					new String[] { "El email ya existe" }, new Object[] {}, "El email ya existe");
-			bindingResult.addError(emailDuplicate);
+			response.put("email", "El email ya existe");
 		}
 
 		if (!userService.isUsernameValid(user)) {
-			FieldError usernameDuplicate = new FieldError("user", "username", user.getUsername(), false,
-					new String[] { "El nombre de usuario ya existe" }, new Object[] {},
-					"El nombre de usuario ya existe");
-			bindingResult.addError(usernameDuplicate);
+			response.put("username", "El nombre de usuario ya existe");
 		}
 
-		if (bindingResult.hasErrors()) {
-			model.addAttribute("titulo", "Registrate");
-			return "registration";
+		if (result.hasErrors()) {
+			response.put("mensaje", "Datos invalidos para registrarse");
+			
+			return new ResponseEntity<Map<String,Object>>(response,HttpStatus.BAD_REQUEST);
 		}
 		
-		if (!photo.isEmpty()) {
+		if (!user.getProfileImg().isEmpty()) {
 
 			String uniqueFilename = null;
+			String codeBase64 = user.getProfileImg().replace("name:.*;", "");
+			String fileName = user.getProfileImg().replace(codeBase64, "");
 
 			try {
-				uniqueFilename = uploadFileService.copy(photo, IUploadFileSevice.USER_IMAGE);
+				uniqueFilename = uploadFileService.copy(codeBase64, fileName, IUploadFileSevice.USER_IMAGE);
+
 				user.setProfileImg(uniqueFilename);
 			} catch (IOException e) {
 				e.printStackTrace();
+				response.put("mensaje", "Error al guardar imagen");
+				return new ResponseEntity<Map<String,Object>>(response,HttpStatus.INTERNAL_SERVER_ERROR); 
 			}
 		} else {
 			user.setProfileImg(UPLOAD_IMG + ".png");
 		}
 
-		userService.save(user);
-		securityService.autoLogin(user.getUsername(), user.getPass());
-		status.setComplete();
-		flash.addFlashAttribute("success", "Registrado con exito");
+		User newUser=null;
+		
+		try {
+			newUser=userService.save(user);
+		}catch (DataAccessException e) {
+			response.put("mensaje", "Error al realizar el insert en la base de datos");
+			response.put("error",e.getMostSpecificCause().getMessage());
+			
+			return new ResponseEntity<Map<String,Object>>(response,HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		
 
-		return "redirect:/";
+		response.put("token", getToken(user.getUsername(), user.getPass()));
+		response.put("user", newUser);
+		response.put("mensaje", "Registrado con exito");
+		
+		return new ResponseEntity<Map<String,Object>>(response,HttpStatus.CREATED);
+	
 	}
+	
+	private String getToken(String username,String password) {
+		String token="";
+		
+		UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+				username, password);
 
-	@GetMapping("/login")
-	public String login(@RequestParam(value = "error", required = false) String error,
-			@RequestParam(value = "logout", required = false) String logout, Model model, Principal principal,
-			RedirectAttributes flash) {
-
-		if (principal != null) {
-			flash.addFlashAttribute("info", "Ya has iniciado sesión");
-			return "redirect:/";
+		try {
+			token= jwtService.create(authenticationManager.authenticate(authToken));
+		} catch (AuthenticationException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-
-		if (error != null) {
-			model.addAttribute("error", "Los datos ingresados son invalidos");
-		}
-
-		if (logout != null) {
-			model.addAttribute("success", "Has cerrado sesión exitosamente");
-		}
-
-		model.addAttribute("titulo", "Login");
-		return "login";
-	}
-
-	@GetMapping({ "/" })
-	public String home(Model model, Authentication authentication) {
-
-		List<Label> labels = labelService.findAllByUser(userService.findByUsername(authentication.getName()));
-
-		model.addAttribute("user", userService.findByUsername(authentication.getName()));
-		model.addAttribute("titulo", "Home");
-		model.addAttribute("labels", labels);
-		model.addAttribute("username", authentication.getName());
-		return "home";
+		
+		return token;
 	}
 }

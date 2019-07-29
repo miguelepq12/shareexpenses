@@ -9,8 +9,14 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
+import com.miguelpina.app.auth.filter.JWTAuthenticationFilter;
+import com.miguelpina.app.auth.filter.JWTAuthorizationFilter;
+import com.miguelpina.app.auth.service.JWTService;
+
 
 @Configuration
 @EnableWebSecurity
@@ -23,17 +29,20 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	public BCryptPasswordEncoder bCryptPasswordEncoder() {
 		return new BCryptPasswordEncoder();
 	}
+
+	@Autowired
+	private JWTService jwtService;
 	
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		http.authorizeRequests().antMatchers("/css/**","/js/**","/img/**","/registration","/user/uploads/none.png","/h2-console/**").permitAll()
+		http.authorizeRequests().antMatchers("/css/**","/js/**","/img/**","/api/registration","/user/uploads/none.png").permitAll()
 		.antMatchers("/**").hasAnyAuthority("ADMIN","USER")
 		.anyRequest().authenticated()
 		.and()
-		.formLogin()
-		.loginPage("/login").permitAll()
-		.and()
-		.logout().permitAll();
+		.addFilter(new JWTAuthenticationFilter(authenticationManager(),jwtService))
+		.addFilter(new JWTAuthorizationFilter(authenticationManager(),jwtService))
+		.csrf().disable()
+		.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 	}
 
 	@Bean

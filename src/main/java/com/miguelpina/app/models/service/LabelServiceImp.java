@@ -33,8 +33,8 @@ public class LabelServiceImp implements ILabelService{
 
 	@Override
 	@Transactional
-	public void save(Label label) {
-		labelDao.save(label);
+	public Label save(Label label) {
+		return labelDao.save(label);
 		
 	}
 

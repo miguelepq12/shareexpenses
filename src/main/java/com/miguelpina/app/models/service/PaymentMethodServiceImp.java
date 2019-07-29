@@ -34,9 +34,8 @@ public class PaymentMethodServiceImp implements IPaymentMethodService{
 
 	@Override
 	@Transactional
-	public void save(PaymentMethod pm) {
-		paymentMethodDao.save(pm);
-		
+	public PaymentMethod save(PaymentMethod pm) {
+		return paymentMethodDao.save(pm);
 	}
 
 	@Override

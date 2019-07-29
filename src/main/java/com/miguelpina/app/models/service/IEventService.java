@@ -18,7 +18,7 @@ public interface IEventService {
 	
 	public Page<Event> findEventsByUser(Pageable pageable,User user);
 
-	public void saveEvent(Event event);
+	public Event saveEvent(Event event);
 	
 	public void saveMember(Member member);
 

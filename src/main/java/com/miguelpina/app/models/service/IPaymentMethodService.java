@@ -17,7 +17,7 @@ public interface IPaymentMethodService {
 
 	public PaymentMethod findById(Long id);
 	
-	public void save(PaymentMethod pm);
+	public PaymentMethod save(PaymentMethod pm);
 
 	public void delete(Long id);
 

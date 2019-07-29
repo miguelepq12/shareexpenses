@@ -17,6 +17,7 @@ import javax.persistence.TemporalType;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 
@@ -42,12 +43,14 @@ public class User implements Serializable{
     
     @Column(length = 60)
     @NotEmpty
+    @JsonIgnore
     private String pass;
     
     private String profileImg;
     
     @Temporal(TemporalType.DATE)
 	@Column(name="create_at")
+    @JsonIgnore
 	private Date createAt;
 
     @ManyToMany

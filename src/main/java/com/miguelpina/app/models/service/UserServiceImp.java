@@ -25,12 +25,12 @@ public class UserServiceImp implements IUserService{
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 	
 	@Override
-	public void save(User user) {
+	public User save(User user) {
 		user.setPass(bCryptPasswordEncoder.encode(user.getPass()));
 		List<Role> roles=new ArrayList<>();
 		roles.add(roleDao.findById(User.ID_USER_ROLE).orElse(null));
 		user.setRoles(roles);
-        userDao.save(user);
+        return userDao.save(user);
 	}
 
 	@Override

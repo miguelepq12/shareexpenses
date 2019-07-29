@@ -1,36 +1,37 @@
 package com.miguelpina.app.controller;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.SessionAttributes;
-import org.springframework.web.bind.support.SessionStatus;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.miguelpina.app.models.entity.Label;
 import com.miguelpina.app.models.service.IEventService;
 import com.miguelpina.app.models.service.ILabelService;
 import com.miguelpina.app.models.service.IUserService;
-import com.miguelpina.app.util.paginator.PageRender;
 
-@RequestMapping("/labels")
-@SessionAttributes("label")
-@Controller
+@RestController
+@RequestMapping("/api/labels")
 public class LabelController {
 
 	@Autowired
@@ -41,9 +42,9 @@ public class LabelController {
 	
 	@Autowired
 	private IEventService eventService;
-
+	
 	@GetMapping(value = {""})
-	public String list(@RequestParam(name = "page", defaultValue = "0") int page, Model model) {
+	public ResponseEntity<?> index(@RequestParam(name = "page", defaultValue = "0") int page) {
 
 		Authentication auth= SecurityContextHolder.getContext().getAuthentication();
 
@@ -51,84 +52,104 @@ public class LabelController {
 		Pageable pageableRequest = PageRequest.of(page, 5);
 		Page<Label> labels = labelService.findAllByUser(pageableRequest,userService.findByUsername(auth.getName()));
 
-		PageRender<Label> render = new PageRender<>("/labels", labels);
-
-		model.addAttribute("user",userService.findByUsername(auth.getName()));
-		model.addAttribute("titulo", "Etiquetas");
-		model.addAttribute("labels", labels);
-		model.addAttribute("page", render);
+		Map<String,Object> response=new HashMap<String, Object>();
+		response.put("labels", labels.getContent());
 		
-		return "label/list";
+		return new ResponseEntity<Map<String,Object>>(response,HttpStatus.OK);
 	}
 
-	@RequestMapping(value = "/create")
-	public String create(Map<String, Object> model) {
-
-		Authentication auth= SecurityContextHolder.getContext().getAuthentication();
+	@GetMapping(value = "/{id}")
+	public ResponseEntity<?> show(@PathVariable long id) {
 		
-		model.put("user",userService.findByUsername(auth.getName()));
-		model.put("label", new Label(userService.findByUsername(auth.getName())));
-		model.put("text_btn", "Agregar");
-		model.put("titulo","Crear etiqueta");
-
-		return "label/form";
-	}
-
-
-	@RequestMapping(value = "/create/{id}")
-	public String edit(@PathVariable long id, Map<String, Object> model, RedirectAttributes flash) {
-		Authentication auth= SecurityContextHolder.getContext().getAuthentication();
 		Label label=null;
+		Map<String, Object> response=new HashMap<>();
 
 		if (id > 0) {
 			label=labelService.findById(id);
 			if (label == null) {
-				flash.addFlashAttribute("error", "La etiqueta no existe");
-				return "redirect:/labels";
+				response.put("mensaje", "La etiqueta no existe");
+				return new ResponseEntity<Map<String,Object>>(response,HttpStatus.NOT_FOUND);
 			}
 		} else {
-			flash.addFlashAttribute("error", "Etiqueta no valida");
-			return "redirect:/labels";
+			response.put("mensaje", "ID no valido");
+			return new ResponseEntity<Map<String,Object>>(response,HttpStatus.BAD_REQUEST);
 		}
 
-		model.put("user",userService.findByUsername(auth.getName()));
-		model.put("label", label);
-		model.put("text_btn", "Modificar");
-		model.put("titulo","Modificar etiqueta");
-
-		return "label/form";
+		return new ResponseEntity<Label>(label,HttpStatus.OK);
 	}
 
-	@RequestMapping(value = "/create", method = RequestMethod.POST)
-	public String save(@Valid Label label, BindingResult result, RedirectAttributes flash, Model model,
-			SessionStatus status) {
-
+	@PostMapping(value = "")
+	public ResponseEntity<?> create(@Valid @RequestBody Label label, BindingResult result) {
+		Label newLabel=null;
+		Map<String, Object> response=new HashMap<>();
+		
 		if (result.hasErrors()) {
-			model.addAttribute("titulo", (label.getId() != null) ? "Modificar etiqueta":"Crear etiqueta");
-			return "label/form";
+			response.put("name",result.getFieldError("name")!=null?result.getFieldError("name").getDefaultMessage():"");
+			response.put("color",result.getFieldError("color")!=null?result.getFieldError("color").getDefaultMessage():"");
+			
+			return new ResponseEntity<Map<String,Object>>(response,HttpStatus.BAD_REQUEST);
+		}
+		
+		try {
+			newLabel=labelService.save(label);
+		}catch (DataAccessException e) {
+			response.put("mensaje", "Error al realizar el insert en la base de datos");
+			response.put("error",e.getMostSpecificCause().getMessage());
+			
+			return new ResponseEntity<Map<String,Object>>(response,HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
-		String msjFlash = (label.getId() != null) ? "Etiqueta modificada" :"Etiqueta creada";
+		return new ResponseEntity<Label>(newLabel,HttpStatus.CREATED);
+	}
+	
+	@PutMapping(value = "/{id}")
+	public ResponseEntity<?> update(@Valid @RequestBody Label label, @PathVariable long id,BindingResult result) {
+		Label oldLabel=labelService.findById(id);
+		Label updatedLabel=null;
+		Map<String, Object> response=new HashMap<>();
+		
+		if (result.hasErrors()) {
+			response.put("name",result.getFieldError("name")!=null?result.getFieldError("name").getDefaultMessage():"");
+			response.put("color",result.getFieldError("color")!=null?result.getFieldError("color").getDefaultMessage():"");
+			
+			return new ResponseEntity<Map<String,Object>>(response,HttpStatus.BAD_REQUEST);
+		}
+		
+		try {
+			oldLabel.setName(label.getName());
+			oldLabel.setColor(label.getColor());
+			
+			updatedLabel=labelService.save(oldLabel);
+		}catch (DataAccessException e) {
+			response.put("mensaje", "Error al actualizar en la base de datos");
+			response.put("error",e.getMostSpecificCause().getMessage());
+			
+			return new ResponseEntity<Map<String,Object>>(response,HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 
-		labelService.save(label);
-		status.setComplete();
-		flash.addFlashAttribute("success", msjFlash);
-		return "redirect:/labels";
+		return new ResponseEntity<Label>(updatedLabel,HttpStatus.OK);
 	}
 
-	@RequestMapping(value = "/delete/{id}")
-	public String delete(@PathVariable Long id, RedirectAttributes flash) {
+	@DeleteMapping(value = "/{id}")
+	public ResponseEntity<?> delete(@PathVariable Long id) {
+		Map<String, Object> response=new HashMap<>();
+		
 		if (id > 0) {
 			if(!eventService.existsEventsWithLabel(labelService.findById(id))) {
-				labelService.delete(id);
-				flash.addFlashAttribute("success", "Etiqueta eliminada");
+				try {
+					labelService.delete(id);
+					response.put("mensaje", "Etiqueta eliminada");
+				}catch (DataAccessException e) {
+					response.put("mensaje", "Error al eliminar en la base de datos");
+					response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
+					return new ResponseEntity<Map<String,Object>>(response,HttpStatus.INTERNAL_SERVER_ERROR);
+				}
 			}else {
-				flash.addFlashAttribute("warning", "Etiqueta es usada por un evento");
-				return "redirect:/labels";
+				response.put("mensaje", "Etiqueta es usada por un evento");
+				return new ResponseEntity<Map<String,Object>>(response,HttpStatus.CONFLICT);
 			}
-			
 		}
 
-		return "redirect:/labels";
+		return new ResponseEntity<Map<String,Object>>(response,HttpStatus.NOT_FOUND);
 	}
 }

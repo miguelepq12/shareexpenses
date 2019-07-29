@@ -6,15 +6,16 @@ import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.UUID;
 
+import org.apache.tomcat.util.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
-import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class UploadFileServiceImp implements IUploadFileSevice{
@@ -39,14 +40,16 @@ public class UploadFileServiceImp implements IUploadFileSevice{
 	}
 
 	@Override
-	public String copy(MultipartFile file,String folder) throws IOException {
-		String uniqueFilename = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+	public String copy(String fileBase64,String fileName,String folder) throws IOException {
+		String uniqueFilename = UUID.randomUUID().toString() + "_" + fileName;
 
 		Path rootPath = getPath(uniqueFilename,folder);
 
 		log.info("rootPath: " + rootPath);
 
-		Files.copy(file.getInputStream(), rootPath);
+		byte[] imageByte=Base64.decodeBase64(fileBase64);
+		
+		Files.write(rootPath, imageByte, StandardOpenOption.CREATE);
 
 		return uniqueFilename;
 	}

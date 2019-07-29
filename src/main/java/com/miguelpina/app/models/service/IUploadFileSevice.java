@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 
 import org.springframework.core.io.Resource;
-import org.springframework.web.multipart.MultipartFile;
 
 public interface IUploadFileSevice {
 
@@ -13,7 +12,7 @@ public interface IUploadFileSevice {
 	
 	public Resource load(String filename,String folder) throws MalformedURLException;
 	
-	public String copy(MultipartFile file,String folder) throws IOException;
+	public String copy(String fileBase64,String fileName,String folder) throws IOException;
 	
 	public boolean delete(String filename,String folder);
 	

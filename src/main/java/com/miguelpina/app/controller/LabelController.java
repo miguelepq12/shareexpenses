@@ -2,6 +2,7 @@ package com.miguelpina.app.controller;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
@@ -15,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,6 +33,7 @@ import com.miguelpina.app.models.service.IEventService;
 import com.miguelpina.app.models.service.ILabelService;
 import com.miguelpina.app.models.service.IUserService;
 
+@CrossOrigin(origins= {"http://localhost:4200"})
 @RestController
 @RequestMapping("/api/labels")
 public class LabelController {
@@ -43,10 +47,12 @@ public class LabelController {
 	@Autowired
 	private IEventService eventService;
 	
+	Authentication auth;
+	
 	@GetMapping(value = {""})
 	public ResponseEntity<?> index(@RequestParam(name = "page", defaultValue = "0") int page) {
 
-		Authentication auth= SecurityContextHolder.getContext().getAuthentication();
+		auth= SecurityContextHolder.getContext().getAuthentication();
 
 		
 		Pageable pageableRequest = PageRequest.of(page, 5);
@@ -82,15 +88,18 @@ public class LabelController {
 	public ResponseEntity<?> create(@Valid @RequestBody Label label, BindingResult result) {
 		Label newLabel=null;
 		Map<String, Object> response=new HashMap<>();
+		auth= SecurityContextHolder.getContext().getAuthentication();
 		
 		if (result.hasErrors()) {
-			response.put("name",result.getFieldError("name")!=null?result.getFieldError("name").getDefaultMessage():"");
-			response.put("color",result.getFieldError("color")!=null?result.getFieldError("color").getDefaultMessage():"");
+			response.put("errors", result.getFieldErrors()
+					.stream()
+					.collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage)));
 			
 			return new ResponseEntity<Map<String,Object>>(response,HttpStatus.BAD_REQUEST);
 		}
 		
 		try {
+			label.setUser(userService.findByUsername(auth.getName()));
 			newLabel=labelService.save(label);
 		}catch (DataAccessException e) {
 			response.put("mensaje", "Error al realizar el insert en la base de datos");
@@ -103,14 +112,15 @@ public class LabelController {
 	}
 	
 	@PutMapping(value = "/{id}")
-	public ResponseEntity<?> update(@Valid @RequestBody Label label, @PathVariable long id,BindingResult result) {
+	public ResponseEntity<?> update(@PathVariable long id,@Valid @RequestBody Label label,BindingResult result) {
 		Label oldLabel=labelService.findById(id);
 		Label updatedLabel=null;
 		Map<String, Object> response=new HashMap<>();
 		
 		if (result.hasErrors()) {
-			response.put("name",result.getFieldError("name")!=null?result.getFieldError("name").getDefaultMessage():"");
-			response.put("color",result.getFieldError("color")!=null?result.getFieldError("color").getDefaultMessage():"");
+			response.put("errors", result.getFieldErrors()
+					.stream()
+					.collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage)));
 			
 			return new ResponseEntity<Map<String,Object>>(response,HttpStatus.BAD_REQUEST);
 		}

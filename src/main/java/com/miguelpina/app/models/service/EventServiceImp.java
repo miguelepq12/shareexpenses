@@ -101,4 +101,9 @@ public class EventServiceImp implements IEventService {
 	public boolean existsMembersWithPm(PaymentMethod pm) {
 		return memberDao.existsByPaymentMethod(pm);
 	}
+
+	@Override
+	public List<Member> findMembersByEvent(Long eventId) {
+		return memberDao.findByEvent(eventDao.findById(eventId).orElse(null));
+	}
 }

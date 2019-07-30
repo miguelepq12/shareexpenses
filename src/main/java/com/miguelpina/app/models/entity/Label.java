@@ -48,6 +48,7 @@ public class Label implements Serializable{
 	
 	@Temporal(TemporalType.DATE)
 	@Column(name="create_at")
+	@JsonIgnore
 	private Date createAt;
 	
 	@ManyToOne(fetch=FetchType.LAZY)

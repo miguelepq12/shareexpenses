@@ -18,7 +18,8 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
 
 @Entity
@@ -43,7 +44,7 @@ public class User implements Serializable{
     
     @Column(length = 60)
     @NotEmpty
-    @JsonIgnore
+    @JsonProperty(access = Access.WRITE_ONLY)
     private String pass;
     
     private String profileImg;
@@ -54,7 +55,7 @@ public class User implements Serializable{
 	private Date createAt;
 
     @ManyToMany
-    @JsonManagedReference
+    @JsonIgnore
     private List<Role> roles;
     
     @PrePersist

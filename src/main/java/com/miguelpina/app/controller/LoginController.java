@@ -3,6 +3,7 @@ package com.miguelpina.app.controller;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
@@ -10,19 +11,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.miguelpina.app.auth.service.JWTService;
+import com.miguelpina.app.auth.service.ISecurityService;
 import com.miguelpina.app.models.entity.User;
 import com.miguelpina.app.models.service.IUploadFileSevice;
 import com.miguelpina.app.models.service.IUserService;
 
+@CrossOrigin(origins= {"http://localhost:4200"})
 @RestController
 public class LoginController {
 
@@ -35,34 +37,40 @@ public class LoginController {
 	private IUploadFileSevice uploadFileService;
 	
 	@Autowired
-	private JWTService jwtService;
-	
-	@Autowired
-	private AuthenticationManager authenticationManager;
+	private ISecurityService securityService;
 
 	@PostMapping("/api/registration")
 	public ResponseEntity<?> registration(@Valid @RequestBody User user, BindingResult result) {
 		Map<String, Object> response=new HashMap<String, Object>();
+		String password=user.getPass();
 		
 		if (!userService.isEmailValid(user)) {
-			response.put("email", "El email ya existe");
+			FieldError emailDuplicate = new FieldError("user", "email", user.getEmail(), false,
+					new String[] { "El email ya existe" }, new Object[] {}, "El email ya existe");
+			result.addError(emailDuplicate);
 		}
 
 		if (!userService.isUsernameValid(user)) {
-			response.put("username", "El nombre de usuario ya existe");
+			FieldError usernameDuplicate = new FieldError("user", "username", user.getUsername(), false,
+					new String[] { "El nombre de usuario ya existe" }, new Object[] {},
+					"El nombre de usuario ya existe");
+			result.addError(usernameDuplicate);
 		}
 
 		if (result.hasErrors()) {
 			response.put("mensaje", "Datos invalidos para registrarse");
+			response.put("errors", result.getFieldErrors()
+					.stream()
+					.collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage)));
 			
 			return new ResponseEntity<Map<String,Object>>(response,HttpStatus.BAD_REQUEST);
 		}
 		
-		if (!user.getProfileImg().isEmpty()) {
+		if (user.getProfileImg()!=null&&!user.getProfileImg().isEmpty()) {
 
 			String uniqueFilename = null;
-			String codeBase64 = user.getProfileImg().replace("name:.*;", "");
-			String fileName = user.getProfileImg().replace(codeBase64, "");
+			String codeBase64 = user.getProfileImg().replaceAll("name:.*;", "");
+			String fileName = user.getProfileImg().replace(codeBase64, "").replace("name:","").replace(";","");
 
 			try {
 				uniqueFilename = uploadFileService.copy(codeBase64, fileName, IUploadFileSevice.USER_IMAGE);
@@ -76,11 +84,9 @@ public class LoginController {
 		} else {
 			user.setProfileImg(UPLOAD_IMG + ".png");
 		}
-
-		User newUser=null;
 		
 		try {
-			newUser=userService.save(user);
+			userService.save(user);
 		}catch (DataAccessException e) {
 			response.put("mensaje", "Error al realizar el insert en la base de datos");
 			response.put("error",e.getMostSpecificCause().getMessage());
@@ -89,27 +95,20 @@ public class LoginController {
 		}
 		
 
-		response.put("token", getToken(user.getUsername(), user.getPass()));
-		response.put("user", newUser);
-		response.put("mensaje", "Registrado con exito");
-		
-		return new ResponseEntity<Map<String,Object>>(response,HttpStatus.CREATED);
-	
-	}
-	
-	private String getToken(String username,String password) {
 		String token="";
 		
-		UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-				username, password);
-
 		try {
-			token= jwtService.create(authenticationManager.authenticate(authToken));
+			token=securityService.autoLogin(user.getUsername(), password);
 		} catch (AuthenticationException | IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
-		return token;
+		response.put("token", token);
+		response.put("user", user);
+		response.put("mensaje", "Registrado con exito");
+		
+		return new ResponseEntity<Map<String,Object>>(response,HttpStatus.CREATED);
+	
 	}
 }

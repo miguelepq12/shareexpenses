@@ -17,6 +17,8 @@ public interface IEventService {
 	public List<Event> findEventsByUser(User user);
 	
 	public Page<Event> findEventsByUser(Pageable pageable,User user);
+	
+	public List<Member> findMembersByEvent(Long eventId);
 
 	public Event saveEvent(Event event);
 	

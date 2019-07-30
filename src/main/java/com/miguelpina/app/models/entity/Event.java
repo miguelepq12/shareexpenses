@@ -5,7 +5,6 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -49,6 +48,7 @@ public class Event implements Serializable {
 	private String name;
 	
 	@Digits(integer=9,fraction=2)
+	@NotNull
 	private BigDecimal amount;
 	
 	private String img;
@@ -58,7 +58,7 @@ public class Event implements Serializable {
 	private Date createAt;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JsonIgnore
+	@JsonIgnoreProperties({"hibernateLazyInitializer","handler"})
 	@NotNull
 	private PaymentMethod paymentMethod;
 	
@@ -67,7 +67,7 @@ public class Event implements Serializable {
 	@NotNull
 	private Label label;
 
-	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "event")
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "event")
 	@JsonIgnore
 	private List<Member> members;
 

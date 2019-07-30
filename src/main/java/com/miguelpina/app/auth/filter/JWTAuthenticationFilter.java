@@ -21,7 +21,6 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.miguelpina.app.auth.service.JWTService;
 import com.miguelpina.app.auth.service.JWTServiceImpl;
-import com.miguelpina.app.models.entity.User;
 
 
 public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
@@ -46,9 +45,9 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 			logger.info("Username desde request parameter (form-data): "+username);
 			logger.info("Password desde request parameter (form-data): "+password);
 		}else {
-			User user=null;
+			com.miguelpina.app.models.entity.User user=null;
 			try {
-				user=new ObjectMapper().readValue(request.getInputStream(), User.class);
+				user=new ObjectMapper().readValue(request.getInputStream(), com.miguelpina.app.models.entity.User.class);
 				username=user.getUsername();
 				password=user.getPass();
 				
@@ -81,7 +80,6 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 		
 		Map<String, Object> body =new HashMap<String,Object>();
 		body.put("token", token);
-		body.put("user", (User)authResult.getPrincipal());
 		body.put("mensaje", String.format("%s, has iniciado sesión",authResult.getName()));
 		
 		response.getWriter().write(new ObjectMapper().writeValueAsString(body));

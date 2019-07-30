@@ -2,6 +2,7 @@ package com.miguelpina.app.controller;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
@@ -15,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,6 +33,7 @@ import com.miguelpina.app.models.service.IEventService;
 import com.miguelpina.app.models.service.IPaymentMethodService;
 import com.miguelpina.app.models.service.IUserService;
 
+@CrossOrigin(origins= {"http://localhost:4200"})
 @RequestMapping("/api/pms")
 @RestController
 public class PaymentMethodController {
@@ -42,10 +46,12 @@ public class PaymentMethodController {
 	@Autowired
 	private IEventService eventService;
 
+	Authentication auth;
+	
 	@GetMapping(value = {""})
 	public ResponseEntity<?> index(@RequestParam(name = "page", defaultValue = "0") int page) {
 
-		Authentication auth= SecurityContextHolder.getContext().getAuthentication();
+		auth= SecurityContextHolder.getContext().getAuthentication();
 
 		Pageable pageableRequest = PageRequest.of(page, 5);
 		Page<PaymentMethod> paymentMethods = paymentMethodService.findAllByUser(pageableRequest,userService.findByUsername(auth.getName()));
@@ -80,14 +86,18 @@ public class PaymentMethodController {
 	public ResponseEntity<?> create(@Valid @RequestBody PaymentMethod pm, BindingResult result) {
 		PaymentMethod newPm=null;
 		Map<String, Object> response=new HashMap<>();
+		auth= SecurityContextHolder.getContext().getAuthentication();
 		
 		if (result.hasErrors()) {
-			response.put("name",result.getFieldError("name")!=null?result.getFieldError("name").getDefaultMessage():"");
+			response.put("errors", result.getFieldErrors()
+					.stream()
+					.collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage)));
 			
 			return new ResponseEntity<Map<String,Object>>(response,HttpStatus.BAD_REQUEST);
 		}
 		
 		try {
+			pm.setUser(userService.findByUsername(auth.getName()));
 			newPm=paymentMethodService.save(pm);
 		}catch (DataAccessException e) {
 			response.put("mensaje", "Error al realizar el insert en la base de datos");
@@ -100,13 +110,15 @@ public class PaymentMethodController {
 	}
 	
 	@PutMapping(value = "/{id}")
-	public ResponseEntity<?> update(@Valid @RequestBody PaymentMethod pm, @PathVariable long id,BindingResult result) {
+	public ResponseEntity<?> update(@PathVariable long id,@Valid @RequestBody PaymentMethod pm,BindingResult result) {
 		PaymentMethod oldPm=paymentMethodService.findById(id);
 		PaymentMethod updatedPm=null;
 		Map<String, Object> response=new HashMap<>();
 		
 		if (result.hasErrors()) {
-			response.put("name",result.getFieldError("name")!=null?result.getFieldError("name").getDefaultMessage():"");
+			response.put("errors", result.getFieldErrors()
+					.stream()
+					.collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage)));
 			
 			return new ResponseEntity<Map<String,Object>>(response,HttpStatus.BAD_REQUEST);
 		}
@@ -140,7 +152,7 @@ public class PaymentMethodController {
 					return new ResponseEntity<Map<String,Object>>(response,HttpStatus.INTERNAL_SERVER_ERROR);
 				}
 			}else {
-				response.put("mensaje", "Metodo de pago es usado por un evento o miembro\"");
+				response.put("mensaje", "Metodo de pago es usado por un evento o miembro");
 				return new ResponseEntity<Map<String,Object>>(response,HttpStatus.CONFLICT);
 			}
 		}

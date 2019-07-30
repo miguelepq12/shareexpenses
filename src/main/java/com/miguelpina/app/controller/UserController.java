@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -24,6 +25,7 @@ import com.miguelpina.app.models.entity.User;
 import com.miguelpina.app.models.service.IUploadFileSevice;
 import com.miguelpina.app.models.service.IUserService;
 
+@CrossOrigin(origins = { "http://localhost:4200" })
 @RestController
 @RequestMapping("/api/user")
 public class UserController {
@@ -35,6 +37,8 @@ public class UserController {
 
 	@Autowired
 	private IUploadFileSevice uploadFileService;
+	
+	Authentication auth;
 
 	@GetMapping(value = "/uploads/{filename:.+}")
 	public ResponseEntity<Resource> getPhoto(@PathVariable String filename) {
@@ -66,14 +70,14 @@ public class UserController {
 	
 	@PutMapping("/pass")
 	public ResponseEntity<?> changePass(@RequestBody User user) {
-		Authentication auth= SecurityContextHolder.getContext().getAuthentication();
+		auth= SecurityContextHolder.getContext().getAuthentication();
 		Map<String, Object> response=new HashMap<>();
 		
 		User oldUser=userService.findByUsername(auth.getName());
 		
 		try {
 			oldUser.setPass(user.getPass());
-			userService.save(user);
+			userService.save(oldUser);
 			response.put("mensaje", "Contraseña actualizada con exito");
 		}catch (DataAccessException e) {
 			response.put("mensaje", "Error al actualizar contraseña en la base de datos");
@@ -87,30 +91,33 @@ public class UserController {
 	}
 	
 	@PutMapping("/img")
-	public ResponseEntity<?> changeImg(User user) {
+	public ResponseEntity<?> changeImg(@RequestBody User user) {
+		auth= SecurityContextHolder.getContext().getAuthentication();
 		Map<String, Object> response=new HashMap<>();
+		User oldUser=userService.findByUsername(auth.getName());
 		
-		if (!user.getProfileImg().isEmpty()) {
+		if (user.getProfileImg()!=null&&!user.getProfileImg().isEmpty()) {
 
 			String uniqueFilename = null;
-			String codeBase64 = user.getProfileImg().replace("name:.*;", "");
-			String fileName = user.getProfileImg().replace(codeBase64, "");
+			String codeBase64 = user.getProfileImg().replaceAll("name:.*;", "");
+			String fileName = user.getProfileImg().replace(codeBase64, "").replace("name:","").replace(";","");
 
 			try {
 				uniqueFilename = uploadFileService.copy(codeBase64, fileName, IUploadFileSevice.USER_IMAGE);
 
-				user.setProfileImg(uniqueFilename);
+				oldUser.setProfileImg(uniqueFilename);
 			} catch (IOException e) {
 				e.printStackTrace();
 				response.put("mensaje", "Error al cambiar imagen");
 				return new ResponseEntity<Map<String,Object>>(response,HttpStatus.INTERNAL_SERVER_ERROR); 
 			}
 		} else {
-			user.setProfileImg(UPLOAD_IMG + ".png");
+			oldUser.setProfileImg(UPLOAD_IMG + ".png");
 		}
 		
-	
-		response.put("success", "Imagen cambiada");
+		User updateUser=userService.save(oldUser);
+		response.put("mensaje", "Imagen cambiada");
+		response.put("user", updateUser);
 		return new ResponseEntity<Map<String,Object>>(response,HttpStatus.OK); 
 	}
 

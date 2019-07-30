@@ -19,7 +19,7 @@ import javax.validation.constraints.NotEmpty;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "payment_methods")
@@ -43,11 +43,12 @@ public class PaymentMethod implements Serializable {
 	
 	@Temporal(TemporalType.DATE)
 	@Column(name="create_at")
+	@JsonIgnore
 	private Date createAt;
 	
 	@ManyToOne(fetch=FetchType.LAZY)
 	@OnDelete(action = OnDeleteAction.CASCADE)
-	@JsonIgnoreProperties({"hibernateLazyInitializer","handler"})
+	@JsonIgnore
 	private User user;
 
 	@PrePersist

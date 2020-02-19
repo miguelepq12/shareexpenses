@@ -65,7 +65,7 @@ public class UserController {
 		
 		response.put("user", userService.findByUsername(auth.getName()));
 		
-		return new ResponseEntity<Map<String,Object>>(response,HttpStatus.OK);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 	
 	@PutMapping("/pass")

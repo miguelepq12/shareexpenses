@@ -14,10 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.miguelpina.app.auth.service.ISecurityService;
 import com.miguelpina.app.models.entity.User;
@@ -40,10 +37,10 @@ public class LoginController {
 	private ISecurityService securityService;
 
 	@PostMapping("/api/registration")
-	public ResponseEntity<?> registration(@Valid @RequestBody User user, BindingResult result) {
+	public ResponseEntity<?> registration( @Valid @RequestBody User user, BindingResult result) {
 		Map<String, Object> response=new HashMap<String, Object>();
 		String password=user.getPass();
-		
+
 		if (!userService.isEmailValid(user)) {
 			FieldError emailDuplicate = new FieldError("user", "email", user.getEmail(), false,
 					new String[] { "El email ya existe" }, new Object[] {}, "El email ya existe");

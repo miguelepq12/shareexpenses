@@ -9,6 +9,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.miguelpina.app.models.service.IUserService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -21,16 +22,19 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.miguelpina.app.auth.service.JWTService;
 import com.miguelpina.app.auth.service.JWTServiceImpl;
+import org.springframework.web.cors.CorsUtils;
 
 
 public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
 	private AuthenticationManager authenticationManger;
 	private JWTService jwtService;
+	private IUserService userService;
 	
-	public JWTAuthenticationFilter(AuthenticationManager authenticationManger,JWTService jwtService) {
+	public JWTAuthenticationFilter(AuthenticationManager authenticationManger,JWTService jwtService,IUserService userService) {
 		this.authenticationManger = authenticationManger;
 		this.jwtService=jwtService;
+		this.userService=userService;
 		setRequiresAuthenticationRequestMatcher(new AntPathRequestMatcher("/api/login","POST"));
 	}
 	
@@ -80,6 +84,7 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 		
 		Map<String, Object> body =new HashMap<String,Object>();
 		body.put("token", token);
+		body.put("user",userService.findByUsername(authResult.getName()));
 		body.put("mensaje", String.format("%s, has iniciado sesión",authResult.getName()));
 		
 		response.getWriter().write(new ObjectMapper().writeValueAsString(body));

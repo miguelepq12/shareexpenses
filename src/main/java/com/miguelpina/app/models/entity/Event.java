@@ -21,6 +21,7 @@ import javax.validation.constraints.Digits;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -56,11 +57,6 @@ public class Event implements Serializable {
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="create_at")
 	private Date createAt;
-
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JsonIgnoreProperties({"hibernateLazyInitializer","handler"})
-	@NotNull
-	private PaymentMethod paymentMethod;
 	
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JsonIgnoreProperties({"hibernateLazyInitializer","handler"})
@@ -114,14 +110,6 @@ public class Event implements Serializable {
 
 	public void setImg(String img) {
 		this.img = img;
-	}
-
-	public PaymentMethod getPaymentMethod() {
-		return paymentMethod;
-	}
-
-	public void setPaymentMethod(PaymentMethod paymentMethod) {
-		this.paymentMethod = paymentMethod;
 	}
 
 	public Label getLabel() {

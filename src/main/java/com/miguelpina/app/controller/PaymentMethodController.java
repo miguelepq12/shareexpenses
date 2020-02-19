@@ -1,11 +1,14 @@
 package com.miguelpina.app.controller;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
+import com.miguelpina.app.models.entity.Event;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
@@ -60,6 +63,35 @@ public class PaymentMethodController {
 		response.put("pms", paymentMethods.getContent());
 		
 		return new ResponseEntity<Map<String,Object>>(response,HttpStatus.OK);
+	}
+
+	@GetMapping(value = {"/totalevent/{id}"})
+	public ResponseEntity<?> totalForEvent(@PathVariable long id) {
+		Event event = null;
+		auth= SecurityContextHolder.getContext().getAuthentication();
+		Map<String, Object> response = new HashMap<>();
+
+		if (id > 0) {
+			event = eventService.findEventById(id);
+			if (event == null) {
+				response.put("mensaje", "El evento no existe");
+				return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
+			}
+		} else {
+			response.put("mensaje", "ID no valido");
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
+		}
+
+		Map<String,Object> paymentMethodsAmountTotal;
+		List<Map<String,Object>> pmTotal= new ArrayList<>();
+		for (PaymentMethod pm: paymentMethodService.findPaymentMethodByMemberOfEvent(event)){
+			paymentMethodsAmountTotal=new HashMap<>();
+			paymentMethodsAmountTotal.put("name",pm.getName());
+			paymentMethodsAmountTotal.put("amount",event.calcAmountForPaymentMethod(pm));
+			pmTotal.add(paymentMethodsAmountTotal);
+		}
+
+		return new ResponseEntity<>(pmTotal,HttpStatus.OK);
 	}
 	
 	@GetMapping(value = "/{id}")
@@ -142,7 +174,7 @@ public class PaymentMethodController {
 		Map<String, Object> response=new HashMap<>();
 		
 		if (id > 0) {
-			if(!eventService.existsEventsWithPm(paymentMethodService.findById(id))) {
+			if(!eventService.existsMembersWithPm(paymentMethodService.findById(id))) {
 				try {
 					paymentMethodService.delete(id);
 					response.put("mensaje", "Metodo de pago eliminado");
@@ -152,7 +184,7 @@ public class PaymentMethodController {
 					return new ResponseEntity<Map<String,Object>>(response,HttpStatus.INTERNAL_SERVER_ERROR);
 				}
 			}else {
-				response.put("mensaje", "Metodo de pago es usado por un evento o miembro");
+				response.put("mensaje", "Metodo de pago es usado por un  miembro");
 				return new ResponseEntity<Map<String,Object>>(response,HttpStatus.CONFLICT);
 			}
 		}

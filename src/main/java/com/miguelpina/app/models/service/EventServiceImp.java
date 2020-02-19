@@ -86,12 +86,6 @@ public class EventServiceImp implements IEventService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public boolean existsEventsWithPm(PaymentMethod pm) {
-		return eventDao.existsByPaymentMethod(pm);
-	}
-
-	@Override
-	@Transactional(readOnly = true)
 	public boolean existsEventsWithLabel(Label label) {
 		return eventDao.existsByLabel(label);
 	}

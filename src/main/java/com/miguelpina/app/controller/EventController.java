@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
+import com.miguelpina.app.models.entity.PaymentMethod;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.dao.DataAccessException;
@@ -115,7 +116,6 @@ public class EventController {
 		Map<String, Object> response = new HashMap<>();
 
 		response.put("labels", labelService.findAllByUser(userService.findByUsername(auth.getName())));
-		response.put("pms", pmService.findAllByUser(userService.findByUsername(auth.getName())));
 
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
@@ -140,6 +140,7 @@ public class EventController {
 		response.put("event", event);
 		response.put("debtors", getDebtors(event));
 		response.put("creditors", getCreditors(event));
+		response.put("individualpay",event.individualInput());
 
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
@@ -224,7 +225,6 @@ public class EventController {
 			oldEvent.setAmount(event.getAmount());
 			oldEvent.setImg(event.getImg());
 			oldEvent.setLabel(event.getLabel());
-			oldEvent.setPaymentMethod(event.getPaymentMethod());
 
 			updatedEvent = eventService.saveEvent(oldEvent);
 		} catch (DataAccessException e) {

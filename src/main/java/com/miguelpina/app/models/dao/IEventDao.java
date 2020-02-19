@@ -22,8 +22,6 @@ public interface IEventDao extends PagingAndSortingRepository<Event, Long>{
 	public Page<Event> findByUserAndNameContainingIgnoreCaseOrderByCreateAtDesc(User user, String name,Pageable pageable);
 	
 	public Page<Event> findByUserAndLabelAndNameContainingIgnoreCaseOrderByCreateAtDesc(User user, Label label,String name,Pageable pageable);
-
-	public boolean existsByPaymentMethod(PaymentMethod pm);
 	
 	public boolean existsByLabel(Label label);
 }

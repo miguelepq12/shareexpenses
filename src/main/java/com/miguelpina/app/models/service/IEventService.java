@@ -36,8 +36,6 @@ public interface IEventService {
 	
 	public void deleteMember(Long idMember);
 	
-	public boolean existsEventsWithPm(PaymentMethod pm);
-	
 	public boolean existsEventsWithLabel(Label label);
 	
 	public boolean existsMembersWithPm(PaymentMethod pm);
